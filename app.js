@@ -1,5 +1,5 @@
 // Adaugă la începutul fișierului app.js
-const api = window.focusAPI || {
+var api = window.focusAPI || {
   get: async (key) => JSON.parse(localStorage.getItem(key) || 'null'),
   set: async (key, val) => localStorage.setItem(key, JSON.stringify(val)),
   delete: async (key) => localStorage.removeItem(key),
@@ -9,7 +9,6 @@ const api = window.focusAPI || {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const api = window.focusAPI;
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
 
