@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       TITLEBAR
+  ═══════════════════════════════════════════ -->
+  <div class="titlebar">
+
+    <div class="titlebar-logo">
+      <div class="logo-mark">
+        <span class="logo-mark-inner">✿</span>
+      </div>
+      <span class="logo-text">FocusHub</span>
+    </div>
+
+    <!-- Theme toggle — Aurora ↔ Forge -->
+    <button class="theme-toggle" id="btn-theme" title="Schimbă tema">
+      <span class="theme-toggle-thumb">✿</span>
+    </button>
+
+    <div class="titlebar-actions">
+      <button class="tb-btn active" id="btn-pin" title="Rămâne pe ecran">📌</button>
+      <button class="tb-btn" id="btn-min" title="Minimizează">−</button>
+      <button class="tb-btn danger" id="btn-close" title="Închide">×</button>
+    </div>
+
+    <div class="shortcut-tooltip" id="shortcut-tooltip">Ctrl+N — Task nou</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       TAB NAV
+  ═══════════════════════════════════════════ -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="focus">Focus</button>
+    <button class="tab-btn" data-tab="insights">Insights</button>
+    <button class="tab-btn" data-tab="wishlist">Wishlist</button>
+    <button class="tab-btn" data-tab="dreams">Dreams</button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       TAB: FOCUS
+  ═══════════════════════════════════════════ -->
+  <section class="tab-panel active" id="tab-focus">
+
+    <!-- Daily summary card -->
+    <div class="daily-card" id="daily-card">
+      <div class="daily-left">
+        <div class="date-today" id="date-today"></div>
+        <div class="date-greeting" id="date-greeting"></div>
+      </div>
+      <div class="daily-right">
+        <button class="add-btn" id="add-task-btn">+ Task</button>
+        <div class="daily-pill" id="daily-pill">0/0 complete • 0m rămas</div>
+        <div class="daily-mini-progress">
+          <div id="daily-mini-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add / edit task form -->
+    <form class="task-form hidden" id="add-task-form">
+      <input  class="form-input" id="task-title"       type="text"           placeholder="Titlu task..."                    maxlength="90" />
+      <textarea class="form-input" id="task-description" placeholder="Descriere opțională..." rows="2"></textarea>
+      <input  class="form-input" id="task-subtasks"    type="text"           placeholder="Subtask-uri separate prin virgulă" />
+      <div class="form-grid">
+        <select class="form-select" id="task-category">
+          <!-- populated by app.js -->
+        </select>
+        <select class="form-select" id="task-energy">
+          <option value="low">○ Low</option>
+          <option value="medium" selected>◎ Medium</option>
+          <option value="high">⚡ High</option>
+        </select>
+      </div>
+      <div class="form-grid">
+        <input class="form-input" id="task-deadline" type="datetime-local" />
+        <input class="form-input" id="task-minutes"  type="number" min="5" step="5" value="30" placeholder="Minute" />
+      </div>
+      <div class="form-actions">
+        <button class="btn-save"   type="submit">Salvează</button>
+        <button class="btn-cancel" id="cancel-task-btn" type="button">Anulează</button>
+      </div>
+    </form>
+
+    <!-- Task groups by category -->
+    <div id="tasks-by-category" class="category-groups"></div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       TAB: INSIGHTS
+  ═══════════════════════════════════════════ -->
+  <section class="tab-panel" id="tab-insights">
+
+    <div class="module-block">
+      <div class="module-header">
+        <span class="module-title">Daily Progress</span>
+        <span id="insights-progress-label">0%</span>
+      </div>
+      <div class="big-progress">
+        <div id="insights-progress-fill"></div>
+      </div>
+      <div class="insight-grid">
+        <div class="insight-chip"><strong id="insight-total">0</strong><span>Total azi</span></div>
+        <div class="insight-chip"><strong id="insight-remaining">0</strong><span>Rămase</span></div>
+        <div class="insight-chip"><strong id="insight-left">0m</strong><span>Timp total</span></div>
+        <div class="insight-chip"><strong id="insight-streak">0</strong><span>Streak 🔥</span></div>
+      </div>
+    </div>
+
+    <div class="module-block">
+      <div class="module-header">
+        <span class="module-title">Categorii</span>
+      </div>
+      <div id="category-chart" class="chart-list"></div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       TAB: WISHLIST
+  ═══════════════════════════════════════════ -->
+  <section class="tab-panel" id="tab-wishlist">
+
+    <div class="module-block">
+      <div class="module-header">
+        <span class="module-title">Someday List</span>
+        <button class="add-btn" id="add-wish-btn">+ Idee</button>
+      </div>
+
+      <div class="category-pills">
+        <button class="pill active" data-cat="all">Toate</button>
+        <button class="pill" data-cat="books">📚 Cărți</button>
+        <button class="pill" data-cat="courses">🎓 Cursuri</button>
+        <button class="pill" data-cat="skills">⚡ Skill-uri</button>
+        <button class="pill" data-cat="travel">✈️ Travel</button>
+        <button class="pill" data-cat="other">💡 Altele</button>
+      </div>
+
+      <div id="wishes-list" class="wishes-list"></div>
+    </div>
+
+    <!-- Add wish form -->
+    <form class="task-form hidden" id="add-wish-form">
+      <input class="form-input" id="wish-input" type="text" placeholder="Ce vrei să faci cândva?" maxlength="120" />
+      <select class="form-select" id="wish-category">
+        <option value="books">📚 Carte de citit</option>
+        <option value="courses">🎓 Curs de făcut</option>
+        <option value="skills">⚡ Skill de învățat</option>
+        <option value="travel">✈️ Loc de vizitat</option>
+        <option value="other">💡 Altceva</option>
+      </select>
+      <textarea class="form-input" id="wish-note" placeholder="Note opționale..." rows="2"></textarea>
+      <div class="form-actions">
+        <button class="btn-save"   type="submit">Salvează</button>
+        <button class="btn-cancel" id="cancel-wish-btn" type="button">Anulează</button>
+      </div>
+    </form>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       TAB: DREAMS
+  ═══════════════════════════════════════════ -->
+  <section class="tab-panel" id="tab-dreams">
+
+    <!-- Dreams sub-nav -->
+    <div class="dreams-subnav">
+      <button class="dreams-tab active" data-dreams="map">🗺 Mind Map</button>
+      <button class="dreams-tab" data-dreams="scratch">✏️ Scratchpad</button>
+      <button class="dreams-tab" data-dreams="quotes">✦ Inspirație</button>
+    </div>
+
+    <!-- Mind Map panel -->
+    <div class="dreams-panel active" id="dreams-panel-map">
+      <div class="map-toolbar">
+        <button class="add-btn" id="add-node-btn">+ Idee nouă</button>
+        <button class="btn-cancel" id="reset-map-btn">Resetează</button>
+        <span class="map-hint">Click dreapta pe nod = conectare</span>
+      </div>
+      <div class="map-canvas-wrap">
+        <canvas id="map-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Scratchpad panel -->
+    <div class="dreams-panel hidden" id="dreams-panel-scratch">
+      <div class="module-block">
+        <div class="module-header">
+          <span class="module-title">Scratchpad</span>
+          <span class="save-indicator" id="scratch-save">Salvat ✓</span>
+        </div>
+        <textarea id="scratchpad" class="scratchpad" placeholder="Aruncă ideile aici... nimic nu se pierde."></textarea>
+      </div>
+    </div>
+
+    <!-- Quotes panel -->
+    <div class="dreams-panel hidden" id="dreams-panel-quotes">
+      <div class="module-block">
+        <div class="module-header">
+          <span class="module-title">Inspirație</span>
+          <button class="add-btn" id="add-quote-btn">+ Citat</button>
+        </div>
+        <div class="quote-card">
+          <div id="quote-text"></div>
+          <span id="quote-author"></span>
+        </div>
+        <div id="quotes-mini-list" class="quotes-mini-list"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       WISH → CALENDAR MODAL
+  ═══════════════════════════════════════════ -->
+  <div class="modal-overlay hidden" id="wish-modal">
+    <div class="modal-card">
+      <h3>Mută în calendar</h3>
+      <p id="wish-modal-text"></p>
+      <input class="form-input" id="wish-modal-deadline" type="datetime-local" />
+      <div class="form-actions">
+        <button class="btn-save"   id="wish-modal-confirm">Confirmă</button>
+        <button class="btn-cancel" id="wish-modal-cancel">Anulează</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       NODE DETAIL MODAL
+  ═══════════════════════════════════════════ -->
+  <div class="node-modal-overlay hidden" id="node-modal-overlay">
+    <div class="node-modal">
+
+      <div class="node-modal-header">
+        <div style="flex:1; min-width:0;">
+          <span class="node-cat-pill" id="modal-cat-pill"></span>
+          <input class="node-title-input" id="modal-node-title" type="text" placeholder="Titlul ideii..." />
+        </div>
+        <button class="modal-close-btn" id="modal-close-btn">×</button>
+      </div>
+
+      <div class="node-modal-body">
+        <div class="note-label">Notițele mele</div>
+        <textarea class="node-note-area" id="modal-note-body"
+          placeholder="Planuri, idei, sentimente... nimic nu se pierde."></textarea>
+        <div class="char-count" id="modal-char-count">0 caractere</div>
+        <div class="linked-task-band hidden" id="modal-linked-task">
+          <span>🔗 Legat de task: <strong id="modal-linked-task-title"></strong></span>
+          <button id="modal-unlink-btn">× Deconectează</button>
+        </div>
+      </div>
+
+      <div class="node-modal-footer">
+        <button class="modal-focus-btn" id="modal-send-focus-btn">→ Trimite în Focus</button>
+        <div class="modal-btn-row">
+          <button class="btn-cancel" id="modal-delete-btn">🗑 Șterge</button>
+          <button class="btn-save"   id="modal-save-btn">Salvează</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
